@@ -12,8 +12,12 @@ const App = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [name, setName] = useState("");
+  const [fetched, setFetched] = useState(false);
   socket.on("message", async function () {
-    await fetchMessages();
+    if (!fetched) {
+      await fetchMessages();
+      setFetched(true);
+    }
   });
 
   async function fetchMessages() {
@@ -41,13 +45,15 @@ const App = () => {
     });
 
     setNewComment("");
+    setFetched(false);
   }
 
   useEffect(() => {
-    if (!comments[0]) {
+    if (!fetched && !comments[0]) {
       fetchMessages();
+      setFetched(true);
     }
-  });
+  }, [comments, fetched]);
 
   return (
     <Space direction="vertical" size="large" className="spacing">
@@ -58,7 +64,7 @@ const App = () => {
       </Row>
 
       <Row justify="center" className="comment-wrapper">
-        {comments && (
+        {fetched && (
           <Col flex="auto">
             <List
               size="large"
